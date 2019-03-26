@@ -1,13 +1,23 @@
 language: python
 python:
   - "3.6"
-cache: pip
+
+env:
+  global:
+    - DATABASE_URL=postgres://postgres:@localhost:5432/ireporter_test
+
+services:
+  - postgresql
+
+before_script:
+  - "psql -c 'create database ireporter_test;' -U postgres"
+
 install:
   - pip install -r requirements.txt
   - pip install coveralls
 script:
-  - nosetests --with-coverage --cover-tests
-  - coverage report
+  - pytest --cov
+  - coverage
 
 after_success:
-  - coveralls 
+  - coveralls

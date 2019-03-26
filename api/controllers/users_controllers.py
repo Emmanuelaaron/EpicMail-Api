@@ -1,9 +1,11 @@
-from api.models.users_model import User, users
+from database.db import Database_connection
 from flask import jsonify, request
 import jwt
 from api.validators import Validators
 from api.token.jwt_token import authenticate
+import psycopg2
 
+db = Database_connection()
 Validator = Validators()
 auth = authenticate()
 class UserController:
@@ -19,14 +21,15 @@ class UserController:
             errors = Validator.validate(user_details, email)
             if len(errors) > 0:
                 return jsonify({"errors": errors}), 400
-            for user in users:
-                if user["email"] == email:
-                    return jsonify({"messages": "Opps!.. ..Email already exists!"}), 400
-            my_account = User(email, firstname, lastname, password)
-            my_account = my_account.signup()
-            my_account["user_id"] = len(users) + 1
-            users.append(my_account)
-            return jsonify({"message": "You've sucessfully created an account"}), 201
+            try:
+                db.signup(email, firstname, lastname, password)
+                return jsonify({"message": "You've sucessfully created an account"}), 201
+            except psycopg2.IntegrityError as e:
+                e = "Email already exists! Choose another"
+                return jsonify ({
+                    "status": 400,
+                    "message": e
+                }), 400
         except Exception as e:
             e = {"Format": "Request format is invalid"}
             return jsonify(e), 400
@@ -40,16 +43,14 @@ class UserController:
             for detail in user_details:
                 if detail.isspace() or len(detail) == 0:
                     return jsonify({"missing": "All fields must be filled"}), 400
-            if len(users) == 0:
-                return jsonify({"message": "You don't have an account! please signup!"}), 200
-            true_user = [user for user in users if user["email"] == email and user["password"] == password]
-            if true_user:
+            if db.check_user_login(email, password):
                 token = auth.encode_auth_token(email).decode("utf-8")
-                return jsonify({"token": token, "message": "sucessfully logged in"}), 201
+                return jsonify({
+                    "token": token, 
+                    "message": "sucessfully logged in"
+                }), 201
             return jsonify({"message": "Oops... Invalid login credentials"}), 400
         except Exception as e:
             e = {"Format": "Request format is invalid"}
             return jsonify(e), 400
 
-    def get_users(self):
-        return jsonify(users)

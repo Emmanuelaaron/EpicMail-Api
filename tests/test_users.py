@@ -10,11 +10,11 @@ class Test_users(BaseTest):
         self.assertIn("You've sucessfully created an account", str(reply))
     
     def test_signup_user_with_existing_email(self):
-        
-        resp = self.signup_user(self.user3)
+        self.signup_user(self.user9)
+        resp = self.signup_user(self.user9)
         reply = json.loads(resp.data.decode())
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("Opps!.. ..Email already exists!", str(reply))
+        self.assertIn("Email already exists! Choose another", str(reply))
 
     def test_signup_user_with_invalid_email(self):
         resp = self.signup_user(self.user4)
