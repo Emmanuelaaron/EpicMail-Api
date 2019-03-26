@@ -6,7 +6,7 @@ from api.token.jwt_token import authenticate
 
 Validator = Validators()
 auth = authenticate()
-class UsersController:
+class UserController:
     def signup_user(self):
         try:
             data = request.get_json()

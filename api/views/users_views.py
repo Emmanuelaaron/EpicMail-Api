@@ -1,9 +1,9 @@
 from flask import Blueprint
-from api.controllers.users_controllers import UsersController
+from api.controllers.users_controllers import UserController
 
 
 users_blueprint = Blueprint("Users", __name__, url_prefix="/api/v1")
-User = UsersController()
+User = UserController()
 @users_blueprint.route('/')
 def index():
     return "You're welcome to EpicMail"
