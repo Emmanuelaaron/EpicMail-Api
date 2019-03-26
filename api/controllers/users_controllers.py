@@ -1,13 +1,12 @@
-from api.models.users_model import User, Users
+from api.models.users_model import User, users
 from flask import jsonify, request
 import jwt
 from api.validators import Validators
 from api.token.jwt_token import authenticate
 
-user_list = Users()
 Validator = Validators()
 auth = authenticate()
-class UsersController:
+class UserController:
     def signup_user(self):
         try:
             data = request.get_json()
@@ -20,13 +19,13 @@ class UsersController:
             errors = Validator.validate(user_details, email)
             if len(errors) > 0:
                 return jsonify({"errors": errors}), 400
-            for user in user_list.get_all_users():
+            for user in users:
                 if user["email"] == email:
                     return jsonify({"messages": "Opps!.. ..Email already exists!"}), 400
             my_account = User(email, firstname, lastname, password)
             my_account = my_account.signup()
-            my_account["user_id"] = len(user_list.get_all_users()) + 1
-            user_list.add_user(my_account)
+            my_account["user_id"] = len(users) + 1
+            users.append(my_account)
             return jsonify({"message": "You've sucessfully created an account"}), 201
         except Exception as e:
             e = {"Format": "Request format is invalid"}
@@ -41,9 +40,9 @@ class UsersController:
             for detail in user_details:
                 if detail.isspace() or len(detail) == 0:
                     return jsonify({"missing": "All fields must be filled"}), 400
-            if len(user_list.get_all_users()) == 0:
-                return jsonify({"message": "Email does not exist"}), 200
-            true_user = user_list.match_user_email_and_password(email, password)
+            if len(users) == 0:
+                return jsonify({"message": "You don't have an account! please signup!"}), 200
+            true_user = [user for user in users if user["email"] == email and user["password"] == password]
             if true_user:
                 token = auth.encode_auth_token(email).decode("utf-8")
                 return jsonify({"token": token, "message": "sucessfully logged in"}), 201
@@ -53,4 +52,4 @@ class UsersController:
             return jsonify(e), 400
 
     def get_users(self):
-        return jsonify(user_list.get_all_users())
+        return jsonify(users)

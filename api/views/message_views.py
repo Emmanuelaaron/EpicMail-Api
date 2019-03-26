@@ -52,4 +52,4 @@ def get_all_sent_emails(user_email):
 @message_blueprint.route("/messages/<int:message_id>", methods=['DELETE'])
 @token_required
 def delete_email(user_email, message_id):
-    return message.delete_specific_email(message_id)
+    return message.delete_specific_email(message_id) 

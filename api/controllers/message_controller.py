@@ -1,12 +1,11 @@
 from flask import request, jsonify
-from api.models.message_model import Message, Messages
+from api.models.message_model import Message, messages
 from api.validators import Validators
-from api.controllers.users_controllers import user_list
+from api.controllers.users_controllers import users
 from api.token.jwt_token import authenticate
 
 auth = authenticate()
 validator = Validators()
-messages = Messages()
 
 class Decoder:
     @staticmethod
@@ -28,7 +27,7 @@ class message_controller():
 
         info = [subject, message]
         sender_email = Decoder.decoded_token()
-        sender_id = user_list.find_user_id_by_email(sender_email)[0]
+        sender_id = [user["user_id"] for user in users if user["email"] == sender_email][0]
         if receiver_id == sender_id:
             return jsonify({
                 "message": "You can't send a message to your self"
@@ -36,29 +35,29 @@ class message_controller():
         for detail in info:
             if detail.isspace() or len(detail) == 0:
                 return jsonify({"missing": "All fields must be filled"}), 400
-        if len(user_list.get_all_users()) == 0:
+        if len(users) == 0:
             return jsonify({
                 "message": "Oops No one is signedup for this email"
             })
-        new_user = user_list.find_user_by_id(receiver_id)
+        new_user = [user for user in users if user["user_id"] == receiver_id]
         if new_user:
             my_message = Message(subject, message)
             new_message = my_message.create_message()
-            new_message["message_id"] = len(messages.get_all_messages()) + 1
+            new_message["message_id"] = len(messages) + 1
             new_message["receiver_id"] = receiver_id
             new_message["sender_id"] = sender_id
-            messages.add_message(new_message)
+            messages.append(new_message)
             return jsonify({"message": "message sent"}), 201
         return jsonify({"message": "Oops... Reciever does not exist on this app"})
 
     def get_all_received_emails(self):
         receiver_email = Decoder.decoded_token()
-        if len(user_list.find_user_id_by_email(receiver_email)) == 0:
+        if len([user for user in users if user["email"] == receiver_email]) == 0:
             return jsonify({
                 "message": "You do not have an account here! Please signup"
             })
-        receiver_id = user_list.find_user_id_by_email(receiver_email)[0]
-        inbox_messages = messages.get_all_received_messages_by_user_id(receiver_id)
+        receiver_id = [user["user_id"] for user in users if user["email"] == receiver_email][0]
+        inbox_messages = [message for message in messages if message["receiver_id"] == receiver_id]
         if not inbox_messages:
             return jsonify({
                 "status": 200,
@@ -71,50 +70,59 @@ class message_controller():
 
     def get_specific_email(self, message_id):
         user_email = Decoder.decoded_token()
-        user_id = user_list.find_user_id_by_email(user_email)[0]
-        messages_ = messages.get_specific_message_using_user_id_and_message_id(user_id, message_id)
+        user_id = [user["user_id"] for user in users if user["email"] == user_email][0]
+        messages_ = [message for message in messages if message["message_id"] == message_id]
         if not messages_:
             return jsonify({
                 "status": 200,
                 "message": "message does not exist"
             })
+        specific_message = messages_[0]
+        if specific_message["receiver_id"] == user_id or specific_message["sender_id"] == user_id:
+            return jsonify({
+                "status": 200,
+                "data": messages_
+            })
         return jsonify({
-            "status": 200,
-            "data": messages_
+            "message": "message does not exist",
+            "status": 200
         })
       
     def get_sent_emails(self):
         sender_email = Decoder.decoded_token()
-        if len(user_list.find_user_id_by_email(sender_email)) == 0:
+        if len([user for user in users if user["email"] == sender_email]) == 0:
             return jsonify({
                 "message": "You do not have an account here! Please signup"
             })
-        send_id = user_list.find_user_id_by_email(sender_email)[0]
-        sent_messages = messages.get_all_sent_messages_by_user_id(send_id)
+        sender_id = [user["user_id"] for user in users if user["email"] == sender_email][0]
+        sent_messages = [message for message in messages if message["sender_id"] == sender_id]
         if not sent_messages:
             return jsonify({
                 "status": 200,
-                "message": "Oops.. you don't have any sent messages!"
+                "message": "Oops..you do not have any messages!"
             }), 200
         return jsonify({
             "status": 200,
             "data": sent_messages
-        })
+        }), 200
       
     def delete_specific_email(self, message_id):
         user_email = Decoder.decoded_token()
-        user_id = user_list.find_user_id_by_email(user_email)[0]
-        messages_ = messages.get_all_messages_by_user_id(user_id)
+        user_id = [user["user_id"] for user in users if user["email"] == user_email][0]
+        messages_ = [message for message in messages if message["message_id"] == message_id]
         if not messages_:
             return jsonify({
-                "message": "You have no sent or received messages!"
+                "status": 200,
+                "message": "message does not exist"
             })
-        to_be_deleted = messages.get_message_with_specific_message_id(message_id)
-        if not to_be_deleted:
+        specific_message = messages_[0]
+        if specific_message["receiver_id"] == user_id or specific_message["sender_id"] == user_id:
+            messages.remove(specific_message)
             return jsonify({
-                "message": "Message with that id does not exist among your emails"
+                "status": 200,
+                "message": "message sucessfully deleted!"
             })
-        messages.get_all_messages().remove(to_be_deleted[0])
         return jsonify({
-            "message": "you've sucessfully deleted the message"
-        }), 200
+            "message": "message does not exist",
+            "status": 200
+        })
