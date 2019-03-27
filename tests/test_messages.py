@@ -73,7 +73,7 @@ class Test_messages(BaseTest):
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(reply["message"], "sucessfully created a group")
 
-    def test_create_group_with_identical_name(self):
+    def test_create_group_with_invalid_input(self):
         resp = app.test_client(self).post("api/v2/groups",
                 headers={"x-access-token": self.token},
                 content_type="application/json", data=json.dumps({"gr": 87677, "ui": "67"})
@@ -81,6 +81,21 @@ class Test_messages(BaseTest):
         reply = json.loads(resp.data.decode())
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(reply["message"], "Oops.. .Invalid input!")
+    
+    def test_create_group_with_identical_name(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        resp = app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "Group already exists! consider another name")
+
+
 
     def test_create_group_with_no_name_inserted(self):
         resp = app.test_client(self).post("api/v2/groups",
@@ -90,5 +105,29 @@ class Test_messages(BaseTest):
         reply = json.loads(resp.data.decode())
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(reply["message"], "No group name inserted!")
+
+    def test_delete_group(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        resp = app.test_client(self).delete("api/v2/groups/1",
+                headers={"x-access-token": self.token}
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "Sucessfully deleted the group!")
+
+    def test_delete_group_when_group_does_not_exist(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        resp = app.test_client(self).delete("api/v2/groups/156",
+                headers={"x-access-token": self.token}
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "Oops .. group does not exist!")
 
 

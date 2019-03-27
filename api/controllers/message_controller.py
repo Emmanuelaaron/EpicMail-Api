@@ -147,7 +147,27 @@ class message_controller():
                 }), 201
             except psycopg2.ProgrammingError  as e:
                 e = {"message": "Group already exists! consider another name"}
-                return jsonify(e), 
+                return jsonify(e), 200
         except Exception as e:
             e = {"message": "Oops.. .Invalid input!"}
             return jsonify(e), 400
+
+    def delete_specific_group(self, group_id):
+        user_email = Decoder.decoded_token()
+        user_id = db.get_user_id_by_email(user_email)
+        user_id = user_id.get("user_id")
+        group_name = db.get_group_name_by_group_id(group_id)
+        if not group_name:
+            return jsonify({
+                "message": "Oops .. group does not exist!"
+            })
+        group_name = group_name.get("group_name")
+        if not db.match_user_id_and_group_id_in_groups(group_id, user_id):
+            return jsonify({
+                "message": "group_id does not exist"
+            }), 200
+        db.delete_specific_group(group_id)
+        db.delete_table(group_name)
+        return jsonify({
+            "message": "Sucessfully deleted the group!"
+        })

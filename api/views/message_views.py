@@ -58,3 +58,8 @@ def delete_email(user_email, message_id):
 @token_required
 def create_group(user_email):
     return message.create_group()
+
+@message_blueprint.route("/groups/<int:group_id>", methods=['DELETE'])
+@token_required
+def delete_group(user_email, group_id):
+    return message.delete_specific_group(group_id)

@@ -85,7 +85,7 @@ class Database_connection:
         
     def drop_tables(self):
         query = "DROP TABLE IF EXISTS {0} CASCADE"
-        tables = ["users", "messages", "groups", "andela", "andela21"]
+        tables = ["users", "messages", "groups", "andela", "andela21", "peoplepower"]
         for table in tables:
             self.cursor.execute(query.format(table))
 
@@ -102,6 +102,29 @@ class Database_connection:
         self.cursor.execute(query)
         result = self.cursor.fetchone()
         return False if result else True
+    
+    def match_user_id_and_group_id_in_groups(self, group_id, user_id):
+        query = "SELECT * FROM groups WHERE group_id = {} \
+                AND createdby = {};".format(group_id, user_id)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return True if result else False
+
+    def delete_specific_group(self, group_id):
+        query = "DELETE FROM groups WHERE group_id = {};".format(group_id)
+        self.cursor.execute(query)
+    
+    def delete_table(self, table_name):
+        query = "DROP TABLE {};".format(table_name)
+        self.cursor.execute(query)
+
+    def get_group_name_by_group_id(self, group_id):
+        query = "SELECT group_name FROM groups WHERE group_id = '{}';".format(group_id)
+        self.cursor.execute(query)
+        user_id = self.cursor.fetchone()
+        return user_id if True else False
+
+
 
 if __name__ == "__main__":
     db = Database_connection()
