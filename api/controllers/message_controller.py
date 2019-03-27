@@ -2,6 +2,7 @@ from flask import request, jsonify
 from api.validators import Validators
 from database.db import Database_connection
 from api.token.jwt_token import authenticate
+import psycopg2
 
 auth = authenticate()
 validator = Validators()
@@ -126,3 +127,27 @@ class message_controller():
             "message": "message does not exist",
             "status": 200
         })
+
+    def create_group(self):
+        try:
+            user_email = Decoder.decoded_token()
+            user_id = db.get_user_id_by_email(user_email)
+            user_id = user_id.get("user_id")
+            data = request.get_json()
+            group_name = data.get("group_name")
+            if group_name.isspace() or len(group_name) == 0:
+                return jsonify({
+                    "message": "No group name inserted!"
+                }), 400
+            try:
+                print(not db.check_if_table_exists(group_name))
+                db.create_group(group_name, user_id)
+                return jsonify({
+                    "message": "sucessfully created a group"
+                }), 201
+            except psycopg2.ProgrammingError  as e:
+                e = {"message": "Group already exists! consider another name"}
+                return jsonify(e), 
+        except Exception as e:
+            e = {"message": "Oops.. .Invalid input!"}
+            return jsonify(e), 400

@@ -83,17 +83,20 @@ class BaseTest(unittest.TestCase):
 	        "message": "blah blah",
 	        "receiver_id": 2
         }
+        self.group1 = {"group_name": "andela"}
+
+        self.group2 = {"group_name": "andela21"}
         
         self.signup_user(self.user)
         self.token = self.login_user(self.user_login)
 
     def signup_user(self, user):
-        signedup_user = app.test_client(self).post("/api/v1/auth/signup", 
+        signedup_user = app.test_client(self).post("/api/v2/auth/signup", 
         content_type="application/json", data=json.dumps(user))
         return signedup_user
 
     def login_user(self, user):
-        loggedin_user = app.test_client(self).post("api/v1/auth/login",
+        loggedin_user = app.test_client(self).post("api/v2/auth/login",
         content_type="application/json", data=json.dumps(user))
         token = json.loads(loggedin_user.data.decode())
         return token.get("token")

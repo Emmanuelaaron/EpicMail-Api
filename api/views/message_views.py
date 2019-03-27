@@ -5,7 +5,7 @@ from functools import wraps
 import jwt
 
 
-message_blueprint = Blueprint("messages", __name__, url_prefix="/api/v1")
+message_blueprint = Blueprint("messages", __name__, url_prefix="/api/v2")
 message = message_controller()
 
 def token_required(f):
@@ -53,3 +53,8 @@ def get_all_sent_emails(user_email):
 @token_required
 def delete_email(user_email, message_id):
     return message.delete_specific_email(message_id) 
+
+@message_blueprint.route("/groups", methods=['POST'])
+@token_required
+def create_group(user_email):
+    return message.create_group()

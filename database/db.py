@@ -26,8 +26,12 @@ class Database_connection:
         message_table = "CREATE TABLE IF NOT EXISTS messages(message_id SERIAL PRIMARY KEY, \
                         createdOn TIMESTAMP DEFAULT NOW(), subject TEXT NOT NULL, message TEXT NOT NULL, \
                             receiver_id INTEGER REFERENCES users, sender_id INTEGER REFERENCES users);"
+        
+        groups_table = "CREATE TABLE IF NOT EXISTS groups(group_id SERIAL PRIMARY KEY, \
+                        group_name VARCHAR(50), createdby INTEGER REFERENCES users);"
         self.cursor.execute(users_table)
         self.cursor.execute(message_table)
+        self.cursor.execute(groups_table)
 
     def signup(self, email, firstname, lastname, password):
         user = "INSERT INTO users(email, firstname, lastname, password) \
@@ -81,14 +85,23 @@ class Database_connection:
         
     def drop_tables(self):
         query = "DROP TABLE IF EXISTS {0} CASCADE"
-        tables = ["users", "messages"]
+        tables = ["users", "messages", "groups", "andela", "andela21"]
         for table in tables:
             self.cursor.execute(query.format(table))
 
+    def create_group(self, group_name, user_id):
+        query = "CREATE TABLE {}(group_id SERIAL PRIMARY KEY, \
+                members VARCHAR(50), isadmin BOOLEAN);".format(group_name)
+        query2 = "INSERT INTO groups(group_name, createdby)\
+                  VALUES('{}', {});".format(group_name, user_id)
+        self.cursor.execute(query)
+        self.cursor.execute(query2)
 
-    
-
-
+    def check_if_table_exists(self, table_name):
+        query = "SELECT to_regclass('{}');".format(table_name)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return False if result else True
 
 if __name__ == "__main__":
     db = Database_connection()

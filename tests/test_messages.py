@@ -5,7 +5,7 @@ from api import app
 class Test_messages(BaseTest):
     def test_send_email(self):
         self.signup_user(self.user7)
-        resp = app.test_client(self).post("api/v1/messages",
+        resp = app.test_client(self).post("api/v2/messages",
                 headers={"x-access-token": self.token},
                 content_type="application/json", data=json.dumps(self.message1)
             )
@@ -14,7 +14,7 @@ class Test_messages(BaseTest):
         self.assertEqual(reply["message"], "message sent")
 
     def test_send_email_with_receiver_not_existin(self):
-        resp = app.test_client(self).post("api/v1/messages",
+        resp = app.test_client(self).post("api/v2/messages",
                 headers={"x-access-token": self.token},
                 content_type="application/json", data=json.dumps(self.message2)
             )
@@ -24,7 +24,7 @@ class Test_messages(BaseTest):
 
     def test_send_email_with_empty_fields(self):
         self.signup_user(self.user8)
-        resp = app.test_client(self).post("api/v1/messages",
+        resp = app.test_client(self).post("api/v2/messages",
                 headers={"x-access-token": self.token},
                 content_type="application/json", data=json.dumps(self.message3)
             )
@@ -33,7 +33,7 @@ class Test_messages(BaseTest):
         self.assertIn("All fields must be filled", str(reply))
 
     def test_get_all_received_email(self):
-        resp = app.test_client(self).get("api/v1/messages",
+        resp = app.test_client(self).get("api/v2/messages",
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
@@ -41,7 +41,7 @@ class Test_messages(BaseTest):
         self.assertIn("'Oops..you do not have any messages!", str(reply))
         
     def test_get_specific_email(self):
-        resp = app.test_client(self).get("api/v1/messages/1455",
+        resp = app.test_client(self).get("api/v2/messages/1455",
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
@@ -49,7 +49,7 @@ class Test_messages(BaseTest):
         self.assertIn("message does not exist", str(reply))
 
     def test_get_sent_emails(self):
-        resp = app.test_client(self).get("api/v1/messages/sent",
+        resp = app.test_client(self).get("api/v2/messages/sent",
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
@@ -57,9 +57,38 @@ class Test_messages(BaseTest):
         self.assertIn("Oops..you do not have any messages!", str(reply))
           
     def test_delete_email(self):
-        resp = app.test_client(self).get("api/v1/messages/1455",
+        resp = app.test_client(self).get("api/v2/messages/1455",
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
-        # self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertIn("message does not exist", str(reply))
+
+    def test_create_group(self):
+        resp = app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(reply["message"], "sucessfully created a group")
+
+    def test_create_group_with_identical_name(self):
+        resp = app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({"gr": 87677, "ui": "67"})
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(reply["message"], "Oops.. .Invalid input!")
+
+    def test_create_group_with_no_name_inserted(self):
+        resp = app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({"group_name": "  "})
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(reply["message"], "No group name inserted!")
+
+
