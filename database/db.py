@@ -61,6 +61,12 @@ class Database_connection:
         result = self.cursor.fetchone()
         return result if True else False
 
+    def check_if_user_exists_by_user_email(self, user_email):
+        query = "SELECT * FROM users WHERE email = '{}';".format(user_email)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if True else False
+
     def get_all_received_messages_using_receiver_id(self, receiver_id):
         query = "SELECT * FROM messages WHERE receiver_id = '{}';".format(receiver_id)
         self.cursor.execute(query)
@@ -121,8 +127,20 @@ class Database_connection:
     def get_group_name_by_group_id(self, group_id):
         query = "SELECT group_name FROM groups WHERE group_id = '{}';".format(group_id)
         self.cursor.execute(query)
-        user_id = self.cursor.fetchone()
-        return user_id if True else False
+        result = self.cursor.fetchone()
+        return result if True else False
+    
+    def add_user_to_a_group(self, user, groupname):
+        isadmin = False
+        query = "INSERT INTO {}(members, isadmin)VALUES ('{}', '{}');".format(groupname, user, isadmin)
+        self.cursor.execute(query)
+    
+    def check_if_user_exists_in_a_group(self, user_email, group_name):
+        query = "SELECT * FROM {} WHERE members = '{}';".format(group_name, user_email)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return True if result else False
+
 
 
 

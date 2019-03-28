@@ -130,4 +130,75 @@ class Test_messages(BaseTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(reply["message"], "Oops .. group does not exist!")
 
+    def test_add_user_to_a_group(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        self.signup_user(self.user10)
+        resp = app.test_client(self).post("api/v2/groups/1/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "rita@gmail.com"
+                })
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(reply["message"], "rita@gmail.com sucessfully added to andela")
+
+    def test_add_user_to_a_group_when_group_not_existing(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        self.signup_user(self.user10)
+        resp = app.test_client(self).post("api/v2/groups/134/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "rita@gmail.com"
+                })
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "Oops .. group does not exist!")
+
+    def test_add_user_to_a_group_with_non_existing_user(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        self.signup_user(self.user10)
+        resp = app.test_client(self).post("api/v2/groups/1/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "ritajhjh@gmail.com"
+                })
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "that user is not signed up on this app!")
+
+    def test_add_user_second_time_to_a_group_with_non_existing_user(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        self.signup_user(self.user10)
+        app.test_client(self).post("api/v2/groups/1/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "rita@gmail.com"
+                })
+            )
+        resp = app.test_client(self).post("api/v2/groups/1/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "rita@gmail.com"
+                })
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "User already added to the group!")
+
+
 

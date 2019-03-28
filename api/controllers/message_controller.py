@@ -171,3 +171,28 @@ class message_controller():
         return jsonify({
             "message": "Sucessfully deleted the group!"
         })
+    
+    def add_user_to_group(self, group_id):
+        user_email = Decoder.decoded_token()
+        user_id = db.get_user_id_by_email(user_email)
+        user_id = user_id.get("user_id")
+        data = request.get_json()
+        email = data.get("email")
+        if not db.check_if_user_exists_by_user_email(email):
+            return jsonify({
+                "message": "that user is not signed up on this app!"
+            })
+        group_name = db.get_group_name_by_group_id(group_id)
+        if not group_name:
+            return jsonify({
+                "message": "Oops .. group does not exist!"
+            })
+        group_name = group_name.get("group_name")
+        if db.check_if_user_exists_in_a_group(email, group_name):
+            return jsonify({
+                "message": "User already added to the group!"
+            })
+        db.add_user_to_a_group(email, group_name)
+        return jsonify({
+            "message": email +" sucessfully added to " + group_name
+        }), 201

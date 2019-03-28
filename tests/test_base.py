@@ -63,6 +63,12 @@ class BaseTest(unittest.TestCase):
             "lastname": "kironde",
             "password": "12345"
         }
+        self.user10 = {
+            "email": "rita@gmail.com",
+            "firstname": "sonibil",
+            "lastname": "kironde",
+            "password": "12345"
+        }
 
         self.message1 = {
             "subject": "people",
