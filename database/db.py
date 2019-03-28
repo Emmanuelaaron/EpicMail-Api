@@ -141,6 +141,28 @@ class Database_connection:
         result = self.cursor.fetchone()
         return True if result else False
 
+    def get_user_id_from_groups_by_group_id(self, group_id):
+        query = "SELECT createdby FROM groups WHERE group_id = {};".format(group_id)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if True else False
+
+    def get_user_id_if_user_exists_by_user_id(self, user_d):
+        query = "SELECT user_id FROM users WHERE user_id = {};".format(user_d)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if True else False
+
+    def get_email_by_user_id(self, user_id):
+        query = "SELECT email FROM users WHERE user_id = '{}';".format(user_id)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if True else False
+
+    def delete_user_from_a_group(self, member, group_name):
+        query = "DELETE FROM {} WHERE members = '{}';".format(group_name, member)
+        self.cursor.execute(query)
+
 
 
 

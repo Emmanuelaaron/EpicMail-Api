@@ -19,7 +19,7 @@ class Test_messages(BaseTest):
                 content_type="application/json", data=json.dumps(self.message2)
             )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
         self.assertEqual(reply["message"], "Oops... Reciever does not exist on this app")
 
     def test_send_email_with_empty_fields(self):
@@ -45,7 +45,7 @@ class Test_messages(BaseTest):
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
         self.assertIn("message does not exist", str(reply))
 
     def test_get_sent_emails(self):
@@ -53,7 +53,7 @@ class Test_messages(BaseTest):
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
         self.assertIn("Oops..you do not have any messages!", str(reply))
           
     def test_delete_email(self):
@@ -61,7 +61,7 @@ class Test_messages(BaseTest):
                 headers={"x-access-token": self.token},
             )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
         self.assertIn("message does not exist", str(reply))
 
     def test_create_group(self):
@@ -159,7 +159,7 @@ class Test_messages(BaseTest):
                 })
             )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
         self.assertEqual(reply["message"], "Oops .. group does not exist!")
 
     def test_add_user_to_a_group_with_non_existing_user(self):
@@ -175,7 +175,7 @@ class Test_messages(BaseTest):
                 })
             )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
         self.assertEqual(reply["message"], "that user is not signed up on this app!")
 
     def test_add_user_second_time_to_a_group_with_non_existing_user(self):
@@ -199,6 +199,66 @@ class Test_messages(BaseTest):
         reply = json.loads(resp.data.decode())
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(reply["message"], "User already added to the group!")
+
+    def test_delete_user_from_a_group(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        self.signup_user(self.user11)
+        app.test_client(self).post("api/v2/groups/1/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "charlese@gmail.com"
+                })
+            )
+        resp = app.test_client(self).delete("api/v2/groups/1/users/2",
+                headers={"x-access-token": self.token},
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(reply["message"], "Sucessfully deleted charlese@gmail.com from andela")
+
+    def test_delete_user_from_a_group_when_group_not_existing(self):
+        self.signup_user(self.user12)
+        resp = app.test_client(self).delete("api/v2/groups/168/users/2",
+                headers={"x-access-token": self.token},
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(reply["message"], "Oops .. group does not exist!")
+
+    def test_delete_user_from_a_group_not_existing_user(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        resp = app.test_client(self).delete("api/v2/groups/1/users/277",
+                headers={"x-access-token": self.token},
+            )
+        reply = json.loads(resp.data.decode())
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(reply["message"], "Oops .. User doesn't exist")
+
+    def test_delete_user_from_a_group_by_unauthorised_personel(self):
+        app.test_client(self).post("api/v2/groups",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps(self.group1)
+            )
+        self.signup_user(self.user11)
+        self.signup_user(self.user13)
+        app.test_client(self).post("api/v2/groups/1/users",
+                headers={"x-access-token": self.token},
+                content_type="application/json", data=json.dumps({
+                    "email": "charlese@gmail.com"
+                })
+            )
+        token = self.login_user({"email": "abel@gmail.com"})
+        resp = app.test_client(self).delete("api/v2/groups/1/users/2",
+                headers={"x-access-token": token},
+            )
+        self.assertEqual(resp.status_code, 401)
+
 
 
 
