@@ -187,6 +187,12 @@ class message_controller():
             return jsonify({
                 "message": "Oops .. group does not exist!"
             })
+        createdby = db.get_user_id_from_groups_by_group_id(group_id)
+        createdby = createdby.get("createdby")
+        if user_id != createdby:
+            return jsonify({
+                "message": "Oops... you can only add users to groups created by you."
+            })
         group_name = group_name.get("group_name")
         if db.check_if_user_exists_in_a_group(email, group_name):
             return jsonify({
@@ -196,3 +202,40 @@ class message_controller():
         return jsonify({
             "message": email +" sucessfully added to " + group_name
         }), 201
+
+    def delete_user_from_a_group(self, group_id, user_id):
+        user_email = Decoder.decoded_token()
+        log_id = db.get_user_id_by_email(user_email)
+        log_id = log_id.get("user_id")
+        print (log_id)
+        group_name = db.get_group_name_by_group_id(group_id)
+        if not group_name:
+            return jsonify({
+                "message": "Oops .. group does not exist!"
+            })
+        users_id = db.get_user_id_if_user_exists_by_user_id(user_id)
+        if not users_id:
+            return jsonify({
+                "message": "Oops .. Users is doesn't exist"
+            })
+        createdby = db.get_user_id_from_groups_by_group_id(group_id)
+        createdby = createdby.get("createdby")
+        if log_id != createdby:
+            return jsonify({
+                "message": "Oops... you can only delete users to groups created by you."
+            })
+        users_id = users_id.get("user_id")
+        email = db.get_email_by_user_id(users_id)
+        email = email.get("email")
+        group_name = group_name.get("group_name")
+        if not db.check_if_user_exists_in_a_group(email, group_name):
+            return jsonify({
+                "message": "users does not exist!["
+            })
+        db.delete_user_from_a_group(email, group_name)
+        return jsonify({
+            "message": "Sucessfully deleted {} from {}".format(email, group_name)
+        })
+
+
+            
