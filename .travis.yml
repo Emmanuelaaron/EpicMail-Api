@@ -1,7 +1,17 @@
 language: python
 python:
   - "3.6"
-cache: pip
+
+env:
+  global:
+    - DATABASE_URL=postgres://postgres:@localhost:5432/epicmail_db
+
+services:
+  - postgresql
+
+before_script:
+  - "psql -c 'create database epicmail_db;' -U postgres"
+
 install:
   - pip install -r requirements.txt
   - pip install coveralls
@@ -10,4 +20,4 @@ script:
   - coverage report
 
 after_success:
-  - coveralls 
+  - coveralls

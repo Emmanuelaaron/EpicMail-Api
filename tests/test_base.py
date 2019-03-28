@@ -1,12 +1,14 @@
 import unittest
 from api import app
 from flask import json
-# import jwt
+from database.db import Database_connection
 
 class BaseTest(unittest.TestCase):
 
     def setUp(self):
         self.tester = app.test_client(self)
+        self.db = Database_connection()
+        self.db.create_tables()
         self.user = {
             "email": "emmanuel@gmail.com",
             "firstname": "emmanuel",
@@ -55,6 +57,18 @@ class BaseTest(unittest.TestCase):
             "lastname": "kironde",
             "password": "12345"
         }
+        self.user9 = {
+            "email": "jeninah@gmail.com",
+            "firstname": "sonibil",
+            "lastname": "kironde",
+            "password": "12345"
+        }
+        self.user10 = {
+            "email": "rita@gmail.com",
+            "firstname": "sonibil",
+            "lastname": "kironde",
+            "password": "12345"
+        }
 
         self.message1 = {
             "subject": "people",
@@ -75,25 +89,24 @@ class BaseTest(unittest.TestCase):
 	        "message": "blah blah",
 	        "receiver_id": 2
         }
+        self.group1 = {"group_name": "andela"}
 
-
-
-
-
-
-
+        self.group2 = {"group_name": "andela21"}
         
         self.signup_user(self.user)
         self.token = self.login_user(self.user_login)
 
     def signup_user(self, user):
-        signedup_user = app.test_client(self).post("/api/v1/auth/signup", 
+        signedup_user = app.test_client(self).post("/api/v2/auth/signup", 
         content_type="application/json", data=json.dumps(user))
         return signedup_user
 
     def login_user(self, user):
-        loggedin_user = app.test_client(self).post("api/v1/auth/login",
+        loggedin_user = app.test_client(self).post("api/v2/auth/login",
         content_type="application/json", data=json.dumps(user))
         token = json.loads(loggedin_user.data.decode())
-        return token["token"]
+        return token.get("token")
+
+    def tearDown(self):
+        self.db.drop_tables()
 

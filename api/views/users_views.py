@@ -2,7 +2,7 @@ from flask import Blueprint
 from api.controllers.users_controllers import UserController
 
 
-users_blueprint = Blueprint("Users", __name__, url_prefix="/api/v1")
+users_blueprint = Blueprint("Users", __name__, url_prefix="/api/v2")
 User = UserController()
 @users_blueprint.route('/')
 def index():
@@ -16,6 +16,3 @@ def signup_user():
 def login_user():
     return User.user_signin()
 
-@users_blueprint.route('/users')
-def get_users():
-    return User.get_users()
