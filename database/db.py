@@ -35,8 +35,10 @@ class Database_connection:
 
     def signup(self, email, firstname, lastname, password):
         user = "INSERT INTO users(email, firstname, lastname, password) \
-                VALUES('{}', '{}', '{}', '{}');".format(email, firstname, lastname, password)
+                VALUES('{}', '{}', '{}', '{}') returning user_id, firstname \
+                    lastname, email;".format(email, firstname, lastname, password)
         self.cursor.execute(user)
+        return self.cursor.fetchone()
     
     def check_user_login(self, email, password):
         query = "SELECT * FROM users WHERE email = '{}' AND password = '{}';".format(email, password)
