@@ -54,8 +54,10 @@ class Database_connection:
     
     def create_message(self, subject, message, receiver_id, sender_id):
         message = "INSERT INTO messages(subject, message, receiver_id, sender_id)\
-                    VALUES('{}', '{}', '{}', '{}');".format(subject, message, receiver_id, sender_id)
+                    VALUES('{}', '{}', '{}', '{}')returning message_id, subject,\
+                         message, receiver_id, sender_id;".format(subject, message, receiver_id, sender_id)
         self.cursor.execute(message)
+        return self.cursor.fetchone()
     
     def check_if_user_exists_by_user_id(self, user_d):
         query = "SELECT * FROM users WHERE user_id = {};".format(user_d)
