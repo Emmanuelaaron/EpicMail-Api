@@ -24,7 +24,8 @@ class UserController:
             try:
                 db.signup(email, firstname, lastname, password)
                 return jsonify({
-                    "message":  "congrats "+ firstname + "!" + " you've sucessfully signed up!"
+                    "message":  "congrats "+ firstname + "!" + " you've sucessfully signed up!",
+                    "status": 201
                 }), 201
             except psycopg2.IntegrityError as e:
                 e = "Email already exists! Choose another"
@@ -49,8 +50,9 @@ class UserController:
                 token = auth.encode_auth_token(email).decode("utf-8")
                 return jsonify({
                     "token": token, 
-                    "message": "sucessfully logged in"
-                }), 201
+                    "message": "sucessfully logged in",
+                    "status": 200
+                }), 200
             return jsonify({"message": "Oops... Invalid login credentials"}), 400
         except Exception as e:
             e = {"Format": "Request format is invalid"}

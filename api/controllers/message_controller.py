@@ -36,7 +36,8 @@ class message_controller():
         sender_id = sender_id.get("user_id")
         if receiver_id == sender_id:
             return jsonify({
-                "message": "You can't send a message to your self"
+                "message": "You can't send a message to your self",
+                "status": 400
             }), 400
         for detail in info:
             if detail.isspace() or len(detail) == 0:
