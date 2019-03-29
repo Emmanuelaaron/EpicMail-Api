@@ -48,9 +48,11 @@ class message_controller():
                 "status": 404
             }), 404
         print (sender_id)
-        db.create_message(subject, message, receiver_id, sender_id)
+        message = db.create_message(subject, message, receiver_id, sender_id)
         return jsonify({
             "message": "message sent",
+            "data": message,
+            "status": 201
         }), 201
 
     def get_all_received_emails(self):
