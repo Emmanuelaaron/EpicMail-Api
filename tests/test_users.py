@@ -50,7 +50,7 @@ class Test_users(BaseTest):
                 })
         )
         reply = json.loads(resp.data.decode())
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(reply["message"], "sucessfully logged in")
 
     def test_signin_user_with_wrong_login_credentials(self):
