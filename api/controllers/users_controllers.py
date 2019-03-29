@@ -23,7 +23,9 @@ class UserController:
                 return jsonify({"errors": errors}), 400
             try:
                 db.signup(email, firstname, lastname, password)
-                return jsonify({"message": "You've sucessfully created an account"}), 201
+                return jsonify({
+                    "message":  "congrats "+ firstname + "!" + " you've sucessfully signed up!"
+                }), 201
             except psycopg2.IntegrityError as e:
                 e = "Email already exists! Choose another"
                 return jsonify ({
