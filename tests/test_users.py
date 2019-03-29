@@ -7,7 +7,7 @@ class Test_users(BaseTest):
         resp = self.signup_user(self.user2)
         reply = json.loads(resp.data.decode())
         self.assertEqual(resp.status_code, 201)
-        self.assertIn("You've sucessfully created an account", str(reply))
+        self.assertIn("congrats sonibil! you've sucessfully signed up!", str(reply))
     
     def test_signup_user_with_existing_email(self):
         self.signup_user(self.user9)
