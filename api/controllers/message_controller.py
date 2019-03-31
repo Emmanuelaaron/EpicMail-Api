@@ -149,6 +149,7 @@ class message_controller():
             try:
                 print(not db.check_if_table_exists(group_name))
                 db.create_group(group_name, user_id)
+                db.add_user_to_a_group(user_email, group_name)
                 return jsonify({
                     "message": "sucessfully created a group"
                 }), 201
@@ -254,5 +255,40 @@ class message_controller():
             "message": "Sucessfully deleted {} from {}".format(email, group_name)
         })
 
+    def send_email_to_a_group(self, group_id):
+        user_email = Decoder.decoded_token()
+        user_id = db.get_user_id_by_email(user_email)
+        user_id = user_id.get("user_id")
+        print (user_id)
+        group_name = db.get_group_name_by_group_id(group_id)
+        createdby = db.get_user_id_from_groups_by_group_id(group_id)
+        if not group_name:
+            return jsonify({
+                "message": "Oops .. group does not exist!",
+                "status": 404
+            }), 404
+        group_name = group_name.get("group_name")
+        createdby = createdby.get("createdby")
+        print(createdby)
+        user = db.check_if_user_exists_in_a_group(user_email, group_name)
+        if not user or user_id != createdby:
+            return jsonify({
+                "message": "You can only send a message to a group you are part of!",
+                "status": 404
+            }), 404
+        data = request.get_json()
+        subject = data.get("subject")
+        message = data.get("message")
+        if not request.json:
+            return jsonify({
+                "message": "No data inserted!",
+                "status": 400
+            }), 400
+        message = db.send_message_to_a_group(group_name, subject, message, user_id)
+        return jsonify({
+            "message": "sucessfully sent the message to " + group_name,
+            "data": message,
+            "status": 201
+        }), 201
 
             

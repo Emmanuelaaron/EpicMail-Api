@@ -29,9 +29,14 @@ class Database_connection:
         
         groups_table = "CREATE TABLE IF NOT EXISTS groups(group_id SERIAL PRIMARY KEY, \
                         group_name VARCHAR(50), createdby INTEGER REFERENCES users);"
+
+        groups_messages_table = "CREATE TABLE IF NOT EXISTS group_messages(message_id SERIAL PRIMARY KEY, \
+                                group_name VARCHAR(50), subject TEXT NOT NULL, message TEXT NOT NULL, \
+                                createdby INTEGER REFERENCES users, createdon TIMESTAMP DEFAULT NOW());"
         self.cursor.execute(users_table)
         self.cursor.execute(message_table)
         self.cursor.execute(groups_table)
+        self.cursor.execute(groups_messages_table)
 
     def signup(self, email, firstname, lastname, password):
         user = "INSERT INTO users(email, firstname, lastname, password) \
@@ -95,7 +100,7 @@ class Database_connection:
         
     def drop_tables(self):
         query = "DROP TABLE IF EXISTS {0} CASCADE"
-        tables = ["users", "messages", "groups", "andela", "andela21", "peoplepower"]
+        tables = ["users", "messages", "groups", "andela", "andela21", "peoplepower", "group_messages"]
         for table in tables:
             self.cursor.execute(query.format(table))
 
@@ -166,6 +171,15 @@ class Database_connection:
     def delete_user_from_a_group(self, member, group_name):
         query = "DELETE FROM {} WHERE members = '{}';".format(group_name, member)
         self.cursor.execute(query)
+
+    def send_message_to_a_group(self, group_name, subject, message, createdby):
+        message = "INSERT INTO group_messages(group_name, subject, message, createdby)\
+                VALUES('{}', '{}', '{}', {}) returning message_id, group_name, subject, message,\
+                    createdby, createdon;".format(group_name, subject, message, createdby)
+        self.cursor.execute(message)
+        return self.cursor.fetchone()
+        
+
 
 
 
