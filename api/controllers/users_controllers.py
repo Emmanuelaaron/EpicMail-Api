@@ -1,5 +1,5 @@
 from database.db import Database_connection
-from flask import jsonify, request
+from flask import jsonify, request, json
 import jwt
 from api.validators import Validators
 from api.token.jwt_token import authenticate
@@ -11,7 +11,7 @@ auth = authenticate()
 class UserController:
     def signup_user(self):
         try:
-            data = request.get_json()
+            data = json.loads(request.data)
             email = data.get("email")
             firstname = data.get("firstname")
             lastname = data.get("lastname")
@@ -41,7 +41,7 @@ class UserController:
     
     def user_signin(self):
         try:
-            data = request.get_json()
+            data = json.loads(request.data)
             email = data.get("email")
             password = data.get("password")
             user_details = [email, password]
