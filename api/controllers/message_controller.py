@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, json
 from api.validators import Validators
 from database.db import Database_connection
 from api.token.jwt_token import authenticate
@@ -20,7 +20,7 @@ class Decoder:
 class message_controller():
 
     def send_email(self):
-        data = request.get_json()
+        data = json.loads(request.data)
         subject = data.get("subject")
         message = data.get("message")
         receiver_id = data.get("receiver_id")
