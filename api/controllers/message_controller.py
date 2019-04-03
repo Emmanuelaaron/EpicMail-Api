@@ -149,18 +149,13 @@ class message_controller():
                 return jsonify({
                     "message": "No group name inserted!"
                 }), 400
-            try:
-                print(not db.check_if_table_exists(group_name))
-                db.create_group(group_name, user_id)
-                db.add_user_to_a_group(user_email, group_name)
-                return jsonify({
-                    "message": "sucessfully created a group"
-                }), 201
-            except psycopg2.ProgrammingError  as e:
-                e = {"message": "Group already exists! consider another name"}
-                return jsonify(e), 200
+            db.create_group(group_name, user_id)
+            db.add_user_to_a_group(user_email, group_name)
+            return jsonify({
+                "message": "sucessfully created a group"
+            }), 201
         except Exception as e:
-            e = {"message": "Oops.. .Invalid input!"}
+            e = {"message": "Group already exists! consider another name"}
             return jsonify(e), 400
 
     def delete_specific_group(self, group_id):
@@ -220,6 +215,25 @@ class message_controller():
         return jsonify({
             "message": email +" sucessfully added to " + group_name
         }), 201
+    
+    def get_all_groups(self):
+        user_email = Decoder.decoded_token()
+        my_groups = db.get_all_groups()
+        groups = []
+        real_groups = []
+        for item in my_groups:
+            groups.append(item.get("group_name"))
+        for group in groups:
+            mine_groups = db.get_groups_for_user(user_email, group)
+            if mine_groups:
+                real_groups.append(mine_groups)
+            return jsonify({
+                "message": "Oops .. You're not in any group!"
+            })
+        print(real_groups)
+        return jsonify({
+            "message": real_groups
+        })
 
     def delete_user_from_a_group(self, group_id, user_id):
         user_email = Decoder.decoded_token()
