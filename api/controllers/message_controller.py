@@ -28,8 +28,6 @@ class message_controller():
         info = [subject, message]
         sender_email = Decoder.decoded_token()
         sender_id = db.get_user_id_by_email(sender_email)
-        receiver_id = db.get_user_id_by_email(receiver_email)
-        receiver_id = receiver_id.get("user_id")
         sender_id = sender_id.get("user_id")
         if not sender_id:
             return jsonify({
@@ -41,6 +39,8 @@ class message_controller():
                 "message": "Oops... Reciever does not exist on this app",
                 "status": 404
             }), 404
+        receiver_id = db.get_user_id_by_email(receiver_email)
+        receiver_id = receiver_id.get("user_id")
         if receiver_email == sender_email:
             return jsonify({
                 "message": "You can't send a message to your self",
