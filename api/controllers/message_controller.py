@@ -36,6 +36,11 @@ class message_controller():
                 "message": "Oops.. user not registered! Please signup",
                 "status": 404
             }), 404
+        if not db.check_if_user_exists_by_user_email(receiver_email):
+            return jsonify({
+                "message": "Oops... Reciever does not exist on this app",
+                "status": 404
+            }), 404
         if receiver_email == sender_email:
             return jsonify({
                 "message": "You can't send a message to your self",
@@ -44,11 +49,7 @@ class message_controller():
         for detail in info:
             if detail.isspace() or len(detail) == 0:
                 return jsonify({"missing": "All fields must be filled"}), 400
-        if not db.check_if_user_exists_by_user_email(receiver_email):
-            return jsonify({
-                "message": "Oops... Reciever does not exist on this app",
-                "status": 404
-            }), 404
+        
         print (sender_id)
         message = db.create_message(subject, message, receiver_id, sender_id, receiver_email, sender_email)
         return jsonify({
