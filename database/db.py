@@ -128,7 +128,7 @@ class Database_connection:
                 AND createdby = {};".format(group_id, user_id)
         self.cursor.execute(query)
         result = self.cursor.fetchone()
-        return True if result else False
+        return result 
 
     def delete_specific_group(self, group_id):
         query = "DELETE FROM groups WHERE group_id = {};".format(group_id)
@@ -190,9 +190,24 @@ class Database_connection:
         result = self.cursor.fetchone()
         return result if True else False
 
-    # def get_user_id_by_email():
-    #     return "hfj"
-        
+    def get_all_groups(self):
+        query = "SELECT group_name FROM groups"
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        return result if True else False
+
+    def get_groups_for_user(self, email, group_name):
+        query = "SELECT * FROM {} WHERE members = '{}';".format(group_name, email)
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        return group_name if result else False
+
+    def check_if_group_exists(self,group_name):
+        query = "SELECT * FROM {};".format(group_name)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if True else False
+
 
 
 

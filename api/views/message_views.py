@@ -78,3 +78,8 @@ def delete_user_from_group(user_email, group_id, user_id):
 @token_required
 def send_message_to_a_group(user_email, group_id):
     return message.send_email_to_a_group(group_id)
+
+@message_blueprint.route("/groups")
+@token_required
+def get_all_groups(user_email):
+    return message.get_all_groups()
