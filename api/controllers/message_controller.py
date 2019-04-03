@@ -23,18 +23,20 @@ class message_controller():
         data = json.loads(request.data)
         subject = data.get("subject")
         message = data.get("message")
-        receiver_id = data.get("receiver_id")
+        receiver_email = data.get("receiver_email")
 
         info = [subject, message]
         sender_email = Decoder.decoded_token()
         sender_id = db.get_user_id_by_email(sender_email)
+        receiver_id = db.get_user_id_by_email(receiver_email)
+        receiver_id = receiver_id.get("user_id")
+        sender_id = sender_id.get("user_id")
         if not sender_id:
             return jsonify({
                 "message": "Oops.. user not registered! Please signup",
                 "status": 404
             }), 404
-        sender_id = sender_id.get("user_id")
-        if receiver_id == sender_id:
+        if receiver_email == sender_email:
             return jsonify({
                 "message": "You can't send a message to your self",
                 "status": 400
@@ -42,13 +44,13 @@ class message_controller():
         for detail in info:
             if detail.isspace() or len(detail) == 0:
                 return jsonify({"missing": "All fields must be filled"}), 400
-        if not db.check_if_user_exists_by_user_id(receiver_id):
+        if not db.check_if_user_exists_by_user_email(receiver_email):
             return jsonify({
                 "message": "Oops... Reciever does not exist on this app",
                 "status": 404
             }), 404
         print (sender_id)
-        message = db.create_message(subject, message, receiver_id, sender_id)
+        message = db.create_message(subject, message, receiver_id, sender_id, receiver_email, sender_email)
         return jsonify({
             "message": "message sent",
             "data": message,
