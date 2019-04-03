@@ -25,7 +25,8 @@ class Database_connection:
 
         message_table = "CREATE TABLE IF NOT EXISTS messages(message_id SERIAL PRIMARY KEY, \
                         createdOn TIMESTAMP DEFAULT NOW(), subject TEXT NOT NULL, message TEXT NOT NULL, \
-                            receiver_id INTEGER REFERENCES users, sender_id INTEGER REFERENCES users);"
+                            receiver_id INTEGER REFERENCES users, sender_id INTEGER REFERENCES users,\
+                                 receiver_email VARCHAR(50), sender_email VARCHAR(50));"
         
         groups_table = "CREATE TABLE IF NOT EXISTS groups(group_id SERIAL PRIMARY KEY, \
                         group_name VARCHAR(50), createdby INTEGER REFERENCES users);"
@@ -49,7 +50,10 @@ class Database_connection:
         query = "SELECT * FROM users WHERE email = '{}' AND password = '{}';".format(email, password)
         self.cursor.execute(query)
         result = self.cursor.fetchone()
-        return result if True else False
+        if result:
+            return True
+        else:
+            return False
 
     def get_user_id_by_email(self, email):
         query = "SELECT user_id FROM users WHERE email = '{}';".format(email)
@@ -57,10 +61,11 @@ class Database_connection:
         user_id = self.cursor.fetchone()
         return user_id if True else False
     
-    def create_message(self, subject, message, receiver_id, sender_id):
-        message = "INSERT INTO messages(subject, message, receiver_id, sender_id)\
-                    VALUES('{}', '{}', '{}', '{}')returning message_id, subject,\
-                         message, receiver_id, sender_id;".format(subject, message, receiver_id, sender_id)
+    def create_message(self, subject, message, receiver_id, sender_id, receiver_email, sender_email):
+        message = "INSERT INTO messages(subject, message, receiver_id, sender_id, receiver_email, sender_email)\
+                    VALUES('{}', '{}', '{}', '{}', '{}', '{}')returning message_id, subject,\
+                    message, receiver_id, sender_id, sender_email,\
+                    receiver_email;".format(subject, message, receiver_id, sender_id, receiver_email, sender_email)
         self.cursor.execute(message)
         return self.cursor.fetchone()
     
@@ -178,6 +183,15 @@ class Database_connection:
                     createdby, createdon;".format(group_name, subject, message, createdby)
         self.cursor.execute(message)
         return self.cursor.fetchone()
+
+    def check_if_email_exists(self, email):
+        query = "SELECT * FROM users WHERE email = '{}';".format(email)
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if True else False
+
+    # def get_user_id_by_email():
+    #     return "hfj"
         
 
 
