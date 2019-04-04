@@ -232,10 +232,10 @@ class message_controller():
             mine_groups = db.get_groups_for_user(user_email, group)
             if mine_groups:
                 real_groups.append(mine_groups)
+        if len(real_groups) == 0:
             return jsonify({
                 "message": "Oops .. You're not in any group!"
             })
-        print(real_groups)
         return jsonify({
             "message": real_groups
         })
