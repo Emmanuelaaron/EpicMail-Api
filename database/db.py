@@ -208,6 +208,11 @@ class Database_connection:
         result = self.cursor.fetchone()
         return result if True else False
 
+    def check_for_a_group_whether_exists(self, group_name):
+        query = "SELECT group_name FROM groups WHERE group_name = '{}';".format(group_name)
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        return result if True else False
 
 
 

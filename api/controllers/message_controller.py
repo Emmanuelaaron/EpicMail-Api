@@ -143,20 +143,25 @@ class message_controller():
             user_email = Decoder.decoded_token()
             user_id = db.get_user_id_by_email(user_email)
             user_id = user_id.get("user_id")
-            data = request.get_json()
+            data = json.loads(request.data)
             group_name = data.get("group_name")
-            if group_name.isspace() or len(group_name) == 0:
+            group_in = db.check_for_a_group_whether_exists(group_name)
+            print (group_in)
+            if not group_in:
+                db.create_group(group_name, user_id)
+                db.add_user_to_a_group(user_email, group_name)
                 return jsonify({
-                    "message": "No group name inserted!"
-                }), 400
-            db.create_group(group_name, user_id)
-            db.add_user_to_a_group(user_email, group_name)
-            return jsonify({
-                "message": "sucessfully created a group"
-            }), 201
+                    "message": "sucessfully created a group",
+                }), 201
+            if group_in[0].get("group_name") == group_name:
+                return jsonify({
+                    "message": "Group already exists! Please choose another name"
+                })
         except Exception as e:
-            e = {"message": "Group already exists! consider another name"}
-            return jsonify(e), 400
+            return jsonify({
+                "message": "No group name inserted!"
+            }), 400
+        
 
     def delete_specific_group(self, group_id):
         user_email = Decoder.decoded_token()
