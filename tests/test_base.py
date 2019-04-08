@@ -91,7 +91,7 @@ class BaseTest(unittest.TestCase):
         self.message1 = {
             "subject": "people",
 	        "message": "blah blah, blaha",
-	        "receiver_id": 2
+	        "receiver_id": 7
         }
         self.message2 = {
             "subject": "people",
@@ -103,9 +103,9 @@ class BaseTest(unittest.TestCase):
             "password": "12323q"
         }
         self.message3 = {
-            "subject": "  ",
-	        "message": "blah blah",
-	        "receiver_id": 2
+            "subject": "",
+	        "message": "",
+	        "receiver_id": 1
         }
         self.group1 = {"group_name": "andela"}
 
