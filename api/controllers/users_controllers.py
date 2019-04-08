@@ -40,7 +40,7 @@ class UserController:
             return jsonify(e), 400
     
     def user_signin(self):
-        # # try:
+        try:
             data = json.loads(request.data)
             email = data.get("email")
             password = data.get("password")
@@ -57,7 +57,7 @@ class UserController:
                     "status": 200
                 }), 200
             return jsonify({"message": "Oops... Invalid login credentials"}), 400
-        # except Exception as e:
-        #     e = {"Format": "Request format is invalid"}
-        #     return jsonify(e), 400
+        except Exception as e:
+            e = {"Format": "Request format is invalid"}
+            return jsonify(e), 400
 
